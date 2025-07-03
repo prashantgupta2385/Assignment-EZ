@@ -92,6 +92,8 @@ python manage.py runserver
 | GET    | `/admin/`                            | Django admin panel (admin only)                  |
 
 ---
+### Watch the vedio
+[![Watch Demo Video](https://github.com/user-attachments/assets/a29aa242-238b-47cd-bc6b-19915009bf7b)](https://drive.google.com/file/d/1Vkt1CU_QTuKo2Coz8ZTZBRRQWSDXGMSY/view?usp=drive_link)
 
 ## 🧪 Testing
 
