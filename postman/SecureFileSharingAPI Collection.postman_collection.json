@@ -1,0 +1,401 @@
+{
+	"info": {
+		"_postman_id": "8d157f75-c61b-432e-b392-efc5aa8fbd2c",
+		"name": "SecureFileSharingAPI Collection",
+		"description": "This Postman collection automates testing for a secure file-sharing system. It covers user registration, email verification, login, file upload (OPS), and secure download (CLIENT). Tokens and dynamic values are handled automatically via collection variables.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "38273028"
+	},
+	"item": [
+		{
+			"name": "1. Client Signup",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let response = pm.response.json();",
+							"pm.collectionVariables.set(\"client_verify_url\", response.verify_url);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"client03\",\n    \"email\": \"client03@example.com\",\n    \"password\": \"Qwerty@23\",\n    \"user_type\": \"CLIENT\"\n}"
+				},
+				"url": {
+					"raw": "127.0.0.1:8000/register/",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"register",
+						""
+					]
+				},
+				"description": "Registers a new client user by sending username, email, password, and user type (`CLIENT`). On success, it returns a verification link which is stored for the next step."
+			},
+			"response": []
+		},
+		{
+			"name": "2. Verify Client Email",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{client_verify_url}}",
+					"host": [
+						"{{client_verify_url}}"
+					]
+				},
+				"description": "Sends a GET request to the verification link received during signup to activate the client account.\n\nNote:This step is required before the client can log in."
+			},
+			"response": []
+		},
+		{
+			"name": "4. OPS Signup",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let response = pm.response.json();",
+							"pm.collectionVariables.set(\"ops_verify_url\", response.verify_url);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"ops_user03\",\n    \"email\": \"ops03@example.com\",\n    \"password\": \"Qwerty@23\",\n    \"user_type\": \"OPS\"\n}"
+				},
+				"url": {
+					"raw": "127.0.0.1:8000/register/",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"register",
+						""
+					]
+				},
+				"description": "Registers a new operations (OPS) user by submitting their credentials and specifying `\"user_type\": \"OPS\"`. On success, it returns a verification link used to activate the account."
+			},
+			"response": []
+		},
+		{
+			"name": "5. Verify OPS Email",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{ops_verify_url}}",
+					"host": [
+						"{{ops_verify_url}}"
+					]
+				},
+				"description": "Activates the OPS user account by sending a GET request to the verification URL received during registration.\n\nNote: This step is required before the OPS user can log in."
+			},
+			"response": []
+		},
+		{
+			"name": "6. OPS Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let res = pm.response.json();",
+							"pm.collectionVariables.set(\"ops_access_token\", res.access);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"ops_user03\",\n    \"password\": \"Qwerty@23\"\n}"
+				},
+				"url": {
+					"raw": "127.0.0.1:8000/login/",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"login",
+						""
+					]
+				},
+				"description": "Logs in the OPS user using their credentials and returns a JWT access token. The token is stored and used for authorized actions like file upload"
+			},
+			"response": []
+		},
+		{
+			"name": "7. Upload File (OPS)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{ops_access_token}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"file_url\": \"https://docs.google.com/document/d/1oVTM9GFBKdMvrOgf-qC20OF7wXzZxYDP/edit?usp=sharing&ouid=106758618060795254191&rtpof=true&sd=true\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "127.0.0.1:8000/file-upload/",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"file-upload",
+						""
+					]
+				},
+				"description": "Due to Postman's Collection Runner limitation with file uploads, this request uses a Drive link or JSON payload instead of actual file input when run in the collection."
+			},
+			"response": []
+		},
+		{
+			"name": "3. Client Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let res = pm.response.json();",
+							"pm.collectionVariables.set(\"client_access_token\", res.access);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"client03\",\n    \"password\": \"Qwerty@23\"\n}"
+				},
+				"url": {
+					"raw": "127.0.0.1:8000/login/",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"login",
+						""
+					]
+				},
+				"description": "Logs in the verified client user using their credentials and returns a JWT access token. The token is stored and used for authorized actions like generating and downloading files."
+			},
+			"response": []
+		},
+		{
+			"name": "9. List Files (Client)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let responseData = pm.response.json();\r",
+							"\r",
+							"// Check if it's an array and has at least one item\r",
+							"if (Array.isArray(responseData) && responseData.length > 0) {\r",
+							"    let lastFile = responseData[responseData.length - 1];\r",
+							"    let lastFileId = lastFile.id;\r",
+							"    pm.environment.set(\"file_id\", lastFileId);\r",
+							"    console.log(\"Saved last file_id:\", lastFileId);\r",
+							"} else {\r",
+							"    console.warn(\"No files found in response!\");\r",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{client_access_token}}"
+					}
+				],
+				"url": {
+					"raw": "127.0.0.1:8000/list-files",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"list-files"
+					]
+				},
+				"description": "Logs in the verified client user using their credentials and returns a JWT access token. The token is stored and used for authorized actions like generating and downloading filesEndFragment"
+			},
+			"response": []
+		},
+		{
+			"name": "8. Generate Link (Client)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let response = pm.response.json();",
+							"let fullLink = response['download-link'];",
+							"let parts = fullLink.split('/');",
+							"let id = parts[parts.length - 2];",
+							"pm.collectionVariables.set(\"download_link\", id);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{client_access_token}}"
+					}
+				],
+				"url": {
+					"raw": "127.0.0.1:8000/generate-link/{{file_id}}",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"generate-link",
+						"{{file_id}}"
+					]
+				},
+				"description": "Retrieves a list of all files available for the client user. Requires a valid access token in the header for authentication."
+			},
+			"response": []
+		},
+		{
+			"name": "10. Download File (Client)",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{client_access_token}}"
+					}
+				],
+				"url": {
+					"raw": "127.0.0.1:8000/download-file/{{download_link}}",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"download-file",
+						"{{download_link}}"
+					]
+				},
+				"description": "Downloads a file using the encrypted link generated earlier. The request requires a valid client access token and the encrypted file ID stored from the generate link response."
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "client_verify_url",
+			"value": ""
+		},
+		{
+			"key": "client_access_token",
+			"value": ""
+		},
+		{
+			"key": "download_link",
+			"value": ""
+		},
+		{
+			"key": "ops_access_token",
+			"value": ""
+		},
+		{
+			"key": "ops_verify_url",
+			"value": ""
+		}
+	]
+}
